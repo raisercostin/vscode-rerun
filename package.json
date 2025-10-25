@@ -1,0 +1,36 @@
+{
+  "name": "rerun",
+  "displayName": "ReRun",
+  "publisher": "raisercostin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raisercostin/vscode-rerun.git"
+  },
+  "version": "0.1.0",
+  "description": "Reruns the last run/debug",
+  "main": "./extension.js",
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "rerun.run",
+        "title": "Re Run"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "rerun.run",
+        "key": "ctrl+f11",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "enabledApiProposals": [
+    "terminalDataWriteEvent"
+  ]
+}
