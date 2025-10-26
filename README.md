@@ -46,3 +46,7 @@ More about me https://raisercostin.org
 ## 🔧 License
 
 MIT
+
+## 🧰 Release
+
+`npx @vscode/vsce publish minor`
