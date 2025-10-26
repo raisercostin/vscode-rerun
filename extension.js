@@ -78,51 +78,7 @@ function activate(context) {
     log.appendLine(`[debug] attach failed: ${e}`);
   }
 
-  // ---------- 3) Capture terminal JBang runs (proposed API if present) ----------
-  const hasGlobalTerminalEvent = typeof vscode.window.onDidWriteTerminalData === "function";
-  const termBuffers = new Map(); // terminal-> current line buffer
-
-  function scanForJBang(text) {
-    // very permissive: match 'jbang <rest...>' after any prompt symbols and ANSI
-    const cleaned = text.replace(/\x1B\[[0-9;]*[A-Za-z]/g, "");
-    const lines = cleaned.split(/\r?\n/);
-    for (const raw of lines) {
-      // remove any leading prompt chars before matching
-      const line = raw.replace(/^[^A-Za-z0-9]*\s*/, "").trim();
-      const m = line.match(/^jbang\s+.+/i);
-      if (m) return m[0];
-    }
-    return null;
-  }
-
-  if (hasGlobalTerminalEvent) {
-    log.appendLine("[terminal] using window.onDidWriteTerminalData (proposed API)");
-    const sub = vscode.window.onDidWriteTerminalData(async (e) => {
-      try {
-        const buf = (termBuffers.get(e.terminal) || "") + e.data;
-        termBuffers.set(e.terminal, buf);
-        const hit = scanForJBang(buf);
-        if (hit) {
-          save({ kind: "terminal", line: hit, source: "terminal", when: now() });
-          log.appendLine(`[terminal] captured: ${hit}`);
-          termBuffers.set(e.terminal, ""); // reset buffer after capture
-        }
-      } catch (err) {
-        log.appendLine(`[terminal] error: ${err}`);
-      }
-    });
-    context.subscriptions.push(sub);
-  } else {
-    log.appendLine("[terminal] proposed event not available; terminal capture disabled (still OK for commands/debug).");
-  }
-
-  // cleanup buffers when terminals close
-  try {
-    const closeSub = vscode.window.onDidCloseTerminal((t) => termBuffers.delete(t));
-    context.subscriptions.push(closeSub);
-  } catch (_) { }
-
-  // ---------- 4) Replay ----------
+  // ---------- 3) Replay ----------
   const replayCmd = vscode.commands.registerCommand("rerun.run", async () => {
     log.appendLine("[replay] invoked");
     if (!last) {
@@ -153,7 +109,7 @@ function activate(context) {
   });
   context.subscriptions.push(replayCmd);
 
-  // ---------- 5) Status bar for visibility ----------
+  // ---------- 4) Status bar for visibility ----------
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1000);
   function updateStatus() {
     if (!last) {
@@ -181,7 +137,7 @@ function activate(context) {
     _save(s);
     updateStatus();
   };
-  // ---------- 6) Detect keybinding conflicts ----------
+  // ---------- 5) Detect keybinding conflicts ----------
   try {
     vscode.commands.getCommands(true).then((all) => {
       const hasDebug = all.includes("workbench.action.debug.run") || all.includes("workbench.action.debug.start");
