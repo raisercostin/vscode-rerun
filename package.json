@@ -29,8 +29,5 @@
   },
   "engines": {
     "vscode": "^1.99.0"
-  },
-  "enabledApiProposals": [
-    "terminalDataWriteEvent"
-  ]
+  }
 }
